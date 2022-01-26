@@ -11,3 +11,26 @@ Instructions will be written, follow them. API.txt will need the API keys or con
 ACCESS.txt needs access tokens.
     Only the 2nd and 4th line should be replaced in these files. Do not modify the file in any other way. Both files
 should only have 4 lines!
+
+    The code will run once more. It will use the accounts friends list and generate a FRIENDS.txt file. Here, the order
+of the content structure is as follows:
+
+Twitter Name
+Twitter ID
+Replace with Discord webhook URl....
+END
+
+    This will repeat for how many friends the account has. What you need to do is replace the proper line with a Discord
+webhook. If you want one Twitter account status's to be posted to multiple/more than one webhook, then simply add
+Webhook URL as new line after their TwitterID but Before the END line. Example:
+
+Mark
+0123456
+DiscordWebhookURL1
+DIscordWebhookURL2
+DiscordWebhookURLN...
+...
+END
+
+    If you wish to exclude an account from ever being listened to/being posted to Discord, delete their section. Basically,
+delete the name,id, replace line and END lines.

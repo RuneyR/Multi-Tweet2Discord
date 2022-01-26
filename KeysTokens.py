@@ -39,7 +39,7 @@ def check_files():
         exitProgram = True
     if exitProgram:
         print("Program closing, write down the proper keys in the files created.\n")
-        sys.exit("Files created, no not rename file names.")
+        sys.exit("Files created, do not rename file names.")
     else:
         print("Success!")
 
