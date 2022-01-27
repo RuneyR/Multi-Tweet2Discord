@@ -1,13 +1,16 @@
 import tweepy
 
 import KeysTokens as tokenRead
+from Queue import Queue
 from TweepyAPI import TweepyAPI
-import TwitterFollowers as TF
+import TwitterFollowers as twitFoll
+from twitterStream import twitterStream
 
 consumer_key, consumer_secret, access_key, access_secret = None, None, None, None
 tweeter = None
 
 
+# Assign API and Access keys to variables for use.
 def assign_keys():
     global consumer_key, consumer_secret, access_key, access_secret
     tokenRead.check_files()
@@ -19,6 +22,7 @@ def assign_keys():
     access_secret = our_keys[3]
 
 
+# Connect to Twitter, create the API tweeter object.
 def authorize():
     callAPI = TweepyAPI(consumer_key, consumer_secret, access_key, access_secret)
     global tweeter
@@ -28,5 +32,8 @@ def authorize():
 if __name__ == '__main__':
     assign_keys()
     authorize()
-    TF.checkFile(tweeter)
-
+    ourDict = twitFoll.checkFile(tweeter)
+    twitterQueue = Queue(ourDict, tweeter)
+    twitterQueue.beginThread()
+    twStream = twitterStream(ourDict, twitterQueue, consumer_key, consumer_secret, access_key, access_secret)
+    twStream.listen()

@@ -40,8 +40,6 @@ def check_files():
     if exitProgram:
         print("Program closing, write down the proper keys in the files created.\n")
         sys.exit("Files created, do not rename file names.")
-    else:
-        print("Success!")
 
 
 def get_api_variables():
