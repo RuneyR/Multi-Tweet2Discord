@@ -4,13 +4,16 @@ import tweepy
 
 TWITTER_FOLLOWER_FILE = "FRIENDS.txt"
 REPLACE_WEBHOOK_LINE = "Replace with Discord Webhook URL. New line for every new webhook.\n"
-
 global isFileEmpty
 
 
 def checkFile(tweeter: tweepy.API):
-    global isFileEmpty
+    global isFileEmpty, TWITTER_FOLLOWER_FILE
     try:
+        if len(sys.argv) > 1:
+            if sys.argv[1] == '--reprint' or sys.argv[1] == '--rp':
+                TWITTER_FOLLOWER_FILE = "reprint" + TWITTER_FOLLOWER_FILE
+                raise OSError
         isFileEmpty = os.stat(TWITTER_FOLLOWER_FILE).st_size == 0
         contents = readFile()
         return setStage(contents)

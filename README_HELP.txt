@@ -34,3 +34,10 @@ END
 
     If you wish to exclude an account from ever being listened to/being posted to Discord, delete their section. Basically,
 delete the name,id, replace line and END lines.
+
+    The program does take a command arguments. --reprint or --rp will reprint Friends.txt as it usually does, but without
+deleting the original file by appending reprint. In other words, using the argument --reprint or --rp will make a txt
+similar in structure and purpose of FRIENDS.txt but without deleting FRIENDS.txt, as the file created will be named
+reprintFRIENDS.txt. This way, the original file is kept untouched and the user can modify the reprint, or simply take
+information from it, as they may have added more people to follow and would like to see the tweets in Discord.
+Note that this will override any reprintFRIENDS.txt files.
