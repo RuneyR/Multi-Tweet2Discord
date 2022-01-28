@@ -1,4 +1,6 @@
 import threading
+
+import requests.exceptions
 import tweepy
 import time
 import queue
@@ -9,14 +11,21 @@ DEFAULT_WEBHOOK_VALUE_IN_TEXT = TwitterFollowers.REPLACE_WEBHOOK_LINE
 
 
 # Posts to Discord. The
-def discordWebhook(tweet, un, aURL, twitter_dict: dict, id):
+def discordWebhook(tweet, un, aURL, twitter_dict: dict, twitterID):
     from discord_webhook import DiscordWebhook
-    valueInDict = list(twitter_dict.get(id))
+    valueInDict = list(twitter_dict.get(twitterID))
 
-    if valueInDict[0] != DEFAULT_WEBHOOK_VALUE_IN_TEXT:
-        webhook = DiscordWebhook(url=valueInDict, rate_limit_retry=True, content=tweet, username=un, avatar_url=aURL)
-        webhook.execute()
-        time.sleep(1)
+    try:
+        if valueInDict[0] != DEFAULT_WEBHOOK_VALUE_IN_TEXT or valueInDict[0] != "IGNORE":
+            webhook = DiscordWebhook(url=valueInDict, rate_limit_retry=True, content=tweet, username=un, avatar_url=aURL)
+            webhook.execute()
+            time.sleep(1)
+    except requests.exceptions.MissingSchema:
+        print("Invalid Webhook URL at " + un + "! \n Please update. Setting " + twitterID + " to ignore.")
+        twitter_dict.update({twitterID: "IGNORE"})
+        # new_dict = twitter_dict.copy()
+        # new_dict.pop(twitterID)
+        # Queue.setDict(new_dict)
 
 
 class Queue:
@@ -24,6 +33,9 @@ class Queue:
         self.twitter_dict = twitter_dict
         self.statusQueue = queue.Queue(maxsize=0)
         self.tweeter = tweeter
+
+    def setDict(self, new_dict):
+        self.twitter_dict = new_dict
 
     def beginThread(self):
         queueThread = threading.Thread(target=self.checkStatusThenPost)
@@ -33,7 +45,6 @@ class Queue:
     def checkStatusThenPost(self):
         currentStatus = None
         is_not_original_tweet = False
-        print(self.twitter_dict)
         while True:
             if self.statusQueue.empty():
                 time.sleep(5)
@@ -43,7 +54,8 @@ class Queue:
                 print(currentStatus.user.screen_name)
                 print(currentStatus.text)
                 print("<<<_______________>>>")
-                if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus, "quoted_status") or currentStatus.in_reply_to_screen_name != None:
+                if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
+                                                                         "quoted_status") or currentStatus.in_reply_to_screen_name != None:
                     is_not_original_tweet = True
                 # if status.user.id_str == userID and not is_retweet:
                 elif not is_not_original_tweet and 'media' in currentStatus.entities:

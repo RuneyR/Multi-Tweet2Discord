@@ -36,4 +36,6 @@ if __name__ == '__main__':
     twitterQueue = Queue(ourDict, tweeter)
     twitterQueue.beginThread()
     twStream = twitterStream(ourDict, twitterQueue, consumer_key, consumer_secret, access_key, access_secret)
+    print("Starting program with these ID's.")
+    print(ourDict.keys())
     twStream.listen()
