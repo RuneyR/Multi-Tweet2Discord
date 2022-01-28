@@ -25,7 +25,7 @@ def checkFile(tweeter: tweepy.API):
 
 
 def populateTwitterFile(tweeter: tweepy.API):
-    followers = tweeter.get_friends()
+    followers = tweeter.get_friends(count=200)
     textToWrite = ''
     for account in followers:
         textToWrite += account.screen_name + '\n' + str(account.id) + '\n'
