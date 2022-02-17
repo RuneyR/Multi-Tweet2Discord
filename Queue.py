@@ -50,17 +50,16 @@ class Queue:
                 time.sleep(5)
             else:
                 currentStatus = self.statusQueue.get()
-                print(currentStatus.created_at)
-                print(currentStatus.user.screen_name)
-                print(currentStatus.text)
-                print("<<<_______________>>>")
                 if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
                                                                          "quoted_status") or currentStatus.in_reply_to_screen_name != None:
                     is_not_original_tweet = True
                 # if status.user.id_str == userID and not is_retweet:
                 elif not is_not_original_tweet and 'media' in currentStatus.entities:
-                    print(currentStatus)
-                    discordWebhook('https://twitter.com/twitter/statuses/' + currentStatus.id_str,
+                    print(currentStatus.created_at)
+                    print(currentStatus.user.screen_name)
+                    print(currentStatus.text)
+                    print("<<<_______________>>>")
+                    discordWebhook('https://twitter.com/twitter/status/' + currentStatus.id_str,
                                    currentStatus.user.screen_name, currentStatus.user.profile_image_url,
                                    self.twitter_dict, currentStatus.user.id_str)
                 is_not_original_tweet = False
