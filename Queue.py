@@ -4,10 +4,12 @@ import requests.exceptions
 import tweepy
 import time
 import queue
+import logging
 
 import TwitterFollowers
 
 DEFAULT_WEBHOOK_VALUE_IN_TEXT = TwitterFollowers.REPLACE_WEBHOOK_LINE
+logging.basicConfig(filename='app.log', level=logging.INFO)
 
 
 # Posts to Discord. The
@@ -59,7 +61,7 @@ class Queue:
                     print(currentStatus.user.screen_name)
                     print(currentStatus.text)
                     print("<<<_______________>>>")
-                    discordWebhook('https://twitter.com/twitter/status/' + currentStatus.id_str,
+                    discordWebhook('https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
                                    currentStatus.user.screen_name, currentStatus.user.profile_image_url,
                                    self.twitter_dict, currentStatus.user.id_str)
                 is_not_original_tweet = False
