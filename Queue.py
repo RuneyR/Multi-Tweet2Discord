@@ -19,7 +19,8 @@ def discordWebhook(tweet, un, aURL, twitter_dict: dict, twitterID):
 
     try:
         if valueInDict[0] != DEFAULT_WEBHOOK_VALUE_IN_TEXT or valueInDict[0] != "IGNORE":
-            webhook = DiscordWebhook(url=valueInDict, rate_limit_retry=True, content=tweet, username=un, avatar_url=aURL)
+            webhook = DiscordWebhook(url=valueInDict, rate_limit_retry=True, content=tweet, username=un,
+                                     avatar_url=aURL)
             webhook.execute()
             time.sleep(1)
     except requests.exceptions.MissingSchema:
@@ -52,6 +53,9 @@ class Queue:
                 time.sleep(5)
             else:
                 currentStatus = self.statusQueue.get()
+                # Check to see if Truncated. If it is, get the extended version...
+                if currentStatus.truncated:
+                    currentStatus = self.tweeter.get_status(currentStatus.id, tweet_mode='extended')
                 if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
                                                                          "quoted_status") or currentStatus.in_reply_to_screen_name != None:
                     is_not_original_tweet = True
@@ -61,7 +65,8 @@ class Queue:
                     print(currentStatus.user.screen_name)
                     print(currentStatus.text)
                     print("<<<_______________>>>")
-                    discordWebhook('https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
-                                   currentStatus.user.screen_name, currentStatus.user.profile_image_url,
-                                   self.twitter_dict, currentStatus.user.id_str)
+                    discordWebhook(
+                        'https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
+                        currentStatus.user.screen_name, currentStatus.user.profile_image_url,
+                        self.twitter_dict, currentStatus.user.id_str)
                 is_not_original_tweet = False
