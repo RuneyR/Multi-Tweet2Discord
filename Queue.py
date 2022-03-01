@@ -63,7 +63,12 @@ class Queue:
                 elif not is_not_original_tweet and 'media' in currentStatus.entities:
                     print(currentStatus.created_at)
                     print(currentStatus.user.screen_name)
-                    print(currentStatus.text)
+                    # Extended tweets replace text attribute with full_text. If the original status was truncated,
+                    # catch it and post the proper attribute.
+                    try:
+                        print(currentStatus.text)
+                    except AttributeError:
+                        print(currentStatus.full_text)
                     print("<<<_______________>>>")
                     discordWebhook(
                         'https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
