@@ -1,26 +1,35 @@
 import threading
-
+import random
 import requests.exceptions
 import tweepy
 import time
 import queue
 import logging
-
 import TwitterFollowers
 
 DEFAULT_WEBHOOK_VALUE_IN_TEXT = TwitterFollowers.REPLACE_WEBHOOK_LINE
 logging.basicConfig(filename='app.log', level=logging.INFO)
+chars = '0123456789ABCDEF'
 
 
 # Posts to Discord. The
-def discordWebhook(tweet, un, aURL, twitter_dict: dict, twitterID):
-    from discord_webhook import DiscordWebhook
+def discordWebhook(tweet, un, avatarURL, twitter_dict: dict, twitterID, link_str: list, user_name):
+    from discord_webhook import DiscordWebhook, DiscordEmbed
     valueInDict = list(twitter_dict.get(twitterID))
-
+    randomColor = ''.join(random.sample(chars, 6))
     try:
         if valueInDict[0] != DEFAULT_WEBHOOK_VALUE_IN_TEXT or valueInDict[0] != "IGNORE":
-            webhook = DiscordWebhook(url=valueInDict, rate_limit_retry=True, content=tweet, username=un,
-                                     avatar_url=aURL)
+            webhook = DiscordWebhook(url=valueInDict, username=un, avatar_url=avatarURL, rate_limit_retry=True)
+            embed = DiscordEmbed(title=tweet, color=randomColor, url=tweet)
+            embed.set_author(name=user_name, icon_url=avatarURL)
+            embed.set_image(url=link_str[0])
+            webhook.add_embed(embed)
+            for x in range(1, len(link_str)):
+                embed = DiscordEmbed()
+                embed.set_url(tweet)
+                embed.set_image(url=link_str[x])
+                webhook.add_embed(embed)
+
             webhook.execute()
             time.sleep(1)
     except requests.exceptions.MissingSchema:
@@ -54,24 +63,35 @@ class Queue:
             else:
                 currentStatus = self.statusQueue.get()
                 # Check to see if Truncated. If it is, get the extended version...
+                wasTrunc = False
                 if currentStatus.truncated:
                     currentStatus = self.tweeter.get_status(currentStatus.id, tweet_mode='extended')
+                    wasTrunc = True
                 if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
                                                                          "quoted_status") or currentStatus.in_reply_to_screen_name != None:
                     is_not_original_tweet = True
                 # if status.user.id_str == userID and not is_retweet:
-                elif not is_not_original_tweet and 'media' in currentStatus.entities:
+                elif not is_not_original_tweet and 'media' in currentStatus.entities or 'media' in currentStatus.extended_entities:
                     print(currentStatus.created_at)
                     print(currentStatus.user.screen_name)
-                    # Extended tweets replace text attribute with full_text. If the original status was truncated,
-                    # catch it and post the proper attribute.
-                    try:
-                        print(currentStatus.text)
-                    except AttributeError:
+                    if wasTrunc:
                         print(currentStatus.full_text)
-                    print("<<<_______________>>>")
+                        media = currentStatus.extended_entities.get('media')
+                        link_str = []
+                        for x in range(len(media)):
+                            link_str.append(media[x].get("media_url"))
+                    else:
+                        print(currentStatus.text)
+                        media = currentStatus.entities.get('media')
+                        link_str = []
+                        for x in range(len(media)):
+                            link_str.append(media[x].get("media_url"))
+
                     discordWebhook(
                         'https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
                         currentStatus.user.screen_name, currentStatus.user.profile_image_url,
-                        self.twitter_dict, currentStatus.user.id_str)
+                        self.twitter_dict, currentStatus.user.id_str, link_str, currentStatus.user.name)
+                    link_str.clear()
+                    print("<<<_______________>>>")
                 is_not_original_tweet = False
+
