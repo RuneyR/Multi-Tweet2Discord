@@ -40,6 +40,23 @@ def discordWebhook(tweet, un, avatarURL, twitter_dict: dict, twitterID, link_str
         # Queue.setDict(new_dict)
 
 
+def printInfo(currentStatus, wasTrunc: bool):
+    print(currentStatus.created_at)
+    print(currentStatus.user.screen_name)
+    if wasTrunc:
+        print(currentStatus.full_text)
+    else:
+        print(currentStatus.text)
+    print("<<<_______________>>>")
+
+
+def postToDiscord(currentStatus, twitter_dict, link_str):
+    discordWebhook(
+        'https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
+        currentStatus.user.screen_name, currentStatus.user.profile_image_url,
+        twitter_dict, currentStatus.user.id_str, link_str, currentStatus.user.name)
+
+
 class Queue:
     def __init__(self, twitter_dict: dict, tweeter: tweepy.API):
         self.twitter_dict = twitter_dict
@@ -57,6 +74,7 @@ class Queue:
     def checkStatusThenPost(self):
         currentStatus = None
         is_not_original_tweet = False
+        link_str = []
         while True:
             if self.statusQueue.empty():
                 time.sleep(5)
@@ -71,27 +89,23 @@ class Queue:
                                                                          "quoted_status") or currentStatus.in_reply_to_screen_name != None:
                     is_not_original_tweet = True
                 # if status.user.id_str == userID and not is_retweet:
-                elif not is_not_original_tweet and 'media' in currentStatus.entities or 'media' in currentStatus.extended_entities:
-                    print(currentStatus.created_at)
-                    print(currentStatus.user.screen_name)
-                    if wasTrunc:
-                        print(currentStatus.full_text)
-                        media = currentStatus.extended_entities.get('media')
-                        link_str = []
-                        for x in range(len(media)):
-                            link_str.append(media[x].get("media_url"))
+                elif not is_not_original_tweet:
+                    print(currentStatus.id)
+                    if wasTrunc and hasattr(currentStatus, "extended_entities"):
+                        if 'media' in currentStatus.extended_entities:
+                            printInfo(currentStatus, wasTrunc)
+                            media = currentStatus.extended_entities.get('media')
+                            link_str = []
+                            for x in range(len(media)):
+                                link_str.append(media[x].get("media_url"))
+                            postToDiscord(currentStatus, self.twitter_dict, link_str)
                     else:
-                        print(currentStatus.text)
-                        media = currentStatus.entities.get('media')
-                        link_str = []
-                        for x in range(len(media)):
-                            link_str.append(media[x].get("media_url"))
-
-                    discordWebhook(
-                        'https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
-                        currentStatus.user.screen_name, currentStatus.user.profile_image_url,
-                        self.twitter_dict, currentStatus.user.id_str, link_str, currentStatus.user.name)
+                        if 'media' in currentStatus.entities:
+                            printInfo(currentStatus, wasTrunc)
+                            media = currentStatus.entities.get('media')
+                            link_str = []
+                            for x in range(len(media)):
+                                link_str.append(media[x].get("media_url"))
+                            postToDiscord(currentStatus, self.twitter_dict, link_str)
                     link_str.clear()
-                    print("<<<_______________>>>")
                 is_not_original_tweet = False
-
