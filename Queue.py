@@ -76,36 +76,41 @@ class Queue:
         is_not_original_tweet = False
         link_str = []
         while True:
-            if self.statusQueue.empty():
-                time.sleep(5)
-            else:
-                currentStatus = self.statusQueue.get()
-                # Check to see if Truncated. If it is, get the extended version...
-                wasTrunc = False
-                if currentStatus.truncated:
-                    currentStatus = self.tweeter.get_status(currentStatus.id, tweet_mode='extended')
-                    wasTrunc = True
-                if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
-                                                                         "quoted_status") or currentStatus.in_reply_to_screen_name != None:
-                    is_not_original_tweet = True
-                # if status.user.id_str == userID and not is_retweet:
-                elif not is_not_original_tweet:
-                    print(currentStatus.id)
-                    if wasTrunc and hasattr(currentStatus, "extended_entities"):
-                        if 'media' in currentStatus.extended_entities:
-                            printInfo(currentStatus, wasTrunc)
-                            media = currentStatus.extended_entities.get('media')
-                            link_str = []
-                            for x in range(len(media)):
-                                link_str.append(media[x].get("media_url"))
-                            postToDiscord(currentStatus, self.twitter_dict, link_str)
-                    else:
-                        if 'media' in currentStatus.entities:
-                            printInfo(currentStatus, wasTrunc)
-                            media = currentStatus.entities.get('media')
-                            link_str = []
-                            for x in range(len(media)):
-                                link_str.append(media[x].get("media_url"))
-                            postToDiscord(currentStatus, self.twitter_dict, link_str)
-                    link_str.clear()
-                is_not_original_tweet = False
+            try:
+                if self.statusQueue.empty():
+                    time.sleep(5)
+                else:
+                    currentStatus = self.statusQueue.get()
+                    # Check to see if Truncated. If it is, get the extended version...
+                    wasTrunc = False
+                    if currentStatus.truncated:
+                        currentStatus = self.tweeter.get_status(currentStatus.id, tweet_mode='extended')
+                        wasTrunc = True
+                    if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
+                                                                             "quoted_status") or currentStatus.in_reply_to_screen_name != None:
+                        is_not_original_tweet = True
+                    # if status.user.id_str == userID and not is_retweet:
+                    elif not is_not_original_tweet:
+                        print(currentStatus.id)
+                        if wasTrunc and hasattr(currentStatus, "extended_entities"):
+                            if 'media' in currentStatus.extended_entities:
+                                printInfo(currentStatus, wasTrunc)
+                                media = currentStatus.extended_entities.get('media')
+                                link_str = []
+                                for x in range(len(media)):
+                                    link_str.append(media[x].get("media_url"))
+                                postToDiscord(currentStatus, self.twitter_dict, link_str)
+                        else:
+                            if 'media' in currentStatus.entities:
+                                printInfo(currentStatus, wasTrunc)
+                                media = currentStatus.entities.get('media')
+                                link_str = []
+                                for x in range(len(media)):
+                                    link_str.append(media[x].get("media_url"))
+                                postToDiscord(currentStatus, self.twitter_dict, link_str)
+                        link_str.clear()
+                    is_not_original_tweet = False
+            except Exception as e:
+                print(e.message)
+                print(currentStatus.id)
+                continue
