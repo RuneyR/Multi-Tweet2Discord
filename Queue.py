@@ -111,6 +111,7 @@ class Queue:
                         link_str.clear()
                     is_not_original_tweet = False
             except Exception as e:
-                print(e.message)
+                print("WE GOT AN ERROR!: -------------------------")
+                print(e)
                 print(currentStatus.id)
                 continue
