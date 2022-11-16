@@ -13,31 +13,18 @@ chars = '0123456789ABCDEF'
 
 
 # Posts to Discord. The
-def discordWebhook(tweet, un, avatarURL, twitter_dict: dict, twitterID, link_str: list, user_name):
-    from discord_webhook import DiscordWebhook, DiscordEmbed
+def discordWebhook(tweet, un, avatarURL, twitter_dict: dict, twitterID):
+    from discord_webhook import DiscordWebhook
     valueInDict = list(twitter_dict.get(twitterID))
-    randomColor = ''.join(random.sample(chars, 6))
     try:
         if valueInDict[0] != DEFAULT_WEBHOOK_VALUE_IN_TEXT or valueInDict[0] != "IGNORE":
-            webhook = DiscordWebhook(url=valueInDict, username=un, avatar_url=avatarURL, rate_limit_retry=True)
-            embed = DiscordEmbed(title=tweet, color=randomColor, url=tweet)
-            embed.set_author(name=user_name, icon_url=avatarURL)
-            embed.set_image(url=link_str[0])
-            webhook.add_embed(embed)
-            for x in range(1, len(link_str)):
-                embed = DiscordEmbed()
-                embed.set_url(tweet)
-                embed.set_image(url=link_str[x])
-                webhook.add_embed(embed)
+            webhook = DiscordWebhook(url=valueInDict, username=un, content=tweet, avatar_url=avatarURL, rate_limit_retry=True)
 
             webhook.execute()
             time.sleep(1)
     except requests.exceptions.MissingSchema:
         print("Invalid Webhook URL at " + un + "! \n Please update. Setting " + twitterID + " to ignore.")
         twitter_dict.update({twitterID: "IGNORE"})
-        # new_dict = twitter_dict.copy()
-        # new_dict.pop(twitterID)
-        # Queue.setDict(new_dict)
 
 
 def printInfo(currentStatus, wasTrunc: bool):
@@ -50,11 +37,11 @@ def printInfo(currentStatus, wasTrunc: bool):
     print("<<<_______________>>>")
 
 
-def postToDiscord(currentStatus, twitter_dict, link_str):
+def postToDiscord(currentStatus, twitter_dict):
     discordWebhook(
         'https://twitter.com/' + currentStatus.user.screen_name + '/status/' + currentStatus.id_str,
         currentStatus.user.screen_name, currentStatus.user.profile_image_url,
-        twitter_dict, currentStatus.user.id_str, link_str, currentStatus.user.name)
+        twitter_dict, currentStatus.user.id_str)
 
 
 class Queue:
@@ -74,7 +61,6 @@ class Queue:
     def checkStatusThenPost(self):
         currentStatus = None
         is_not_original_tweet = False
-        link_str = []
         while True:
             try:
                 if self.statusQueue.empty():
@@ -95,20 +81,28 @@ class Queue:
                         if wasTrunc and hasattr(currentStatus, "extended_entities"):
                             if 'media' in currentStatus.extended_entities:
                                 printInfo(currentStatus, wasTrunc)
-                                media = currentStatus.extended_entities.get('media')
-                                link_str = []
-                                for x in range(len(media)):
-                                    link_str.append(media[x].get("media_url"))
-                                postToDiscord(currentStatus, self.twitter_dict, link_str)
-                        else:
-                            if 'media' in currentStatus.entities:
-                                printInfo(currentStatus, wasTrunc)
-                                media = currentStatus.entities.get('media')
-                                link_str = []
-                                for x in range(len(media)):
-                                    link_str.append(media[x].get("media_url"))
-                                postToDiscord(currentStatus, self.twitter_dict, link_str)
-                        link_str.clear()
+                                postToDiscord(currentStatus, self.twitter_dict)
+                            else:
+                                if 'media' in currentStatus.entities:
+                                    printInfo(currentStatus, wasTrunc)
+                                    postToDiscord(currentStatus, self.twitter_dict)
+
+                        # if wasTrunc and hasattr(currentStatus, "extended_entities"):
+                        #     if 'media' in currentStatus.extended_entities:
+                        #         printInfo(currentStatus, wasTrunc)
+                        #         media = currentStatus.extended_entities.get('media')
+                        #         link_str = []
+                        #         for x in range(len(media)):
+                        #             link_str.append(media[x].get("media_url"))
+                        #         postToDiscord(currentStatus, self.twitter_dict, link_str)
+                        # else:
+                        #     if 'media' in currentStatus.entities:
+                        #         printInfo(currentStatus, wasTrunc)
+                        #         media = currentStatus.entities.get('media')
+                        #         link_str = []
+                        #         for x in range(len(media)):
+                        #             link_str.append(media[x].get("media_url"))
+                        #         postToDiscord(currentStatus, self.twitter_dict, link_str)
                     is_not_original_tweet = False
             except Exception as e:
                 print("WE GOT AN ERROR!: -------------------------")
