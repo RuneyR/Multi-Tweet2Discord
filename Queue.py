@@ -82,10 +82,12 @@ class Queue:
                             if 'media' in currentStatus.extended_entities:
                                 printInfo(currentStatus, wasTrunc)
                                 postToDiscord(currentStatus, self.twitter_dict)
+                        else:
+                            if 'media' in currentStatus.entities:
+                                printInfo(currentStatus, wasTrunc)
+                                postToDiscord(currentStatus, self.twitter_dict)
                             else:
-                                if 'media' in currentStatus.entities:
-                                    printInfo(currentStatus, wasTrunc)
-                                    postToDiscord(currentStatus, self.twitter_dict)
+                                print("Skipping Tweet, no media!")
 
                         # if wasTrunc and hasattr(currentStatus, "extended_entities"):
                         #     if 'media' in currentStatus.extended_entities:
