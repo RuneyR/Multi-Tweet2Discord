@@ -27,13 +27,10 @@ def discordWebhook(tweet, un, avatarURL, twitter_dict: dict, twitterID):
         twitter_dict.update({twitterID: "IGNORE"})
 
 
-def printInfo(currentStatus, wasTrunc: bool):
+def printInfo(currentStatus):
     print(currentStatus.created_at)
     print(currentStatus.user.screen_name)
-    if wasTrunc:
-        print(currentStatus.full_text)
-    else:
-        print(currentStatus.text)
+    print(currentStatus.text)
     print("<<<_______________>>>")
 
 
@@ -68,26 +65,13 @@ class Queue:
                 else:
                     currentStatus = self.statusQueue.get()
                     # Check to see if Truncated. If it is, get the extended version...
-                    wasTrunc = False
-                    if currentStatus.truncated:
-                        currentStatus = self.tweeter.get_status(currentStatus.id, tweet_mode='extended')
-                        wasTrunc = True
                     if hasattr(currentStatus, "retweeted_status") or hasattr(currentStatus,
                                                                              "quoted_status") or currentStatus.in_reply_to_screen_name != None:
                         is_not_original_tweet = True
-                    # if status.user.id_str == userID and not is_retweet:
                     elif not is_not_original_tweet:
                         print(currentStatus.id)
-                        if wasTrunc and hasattr(currentStatus, "extended_entities"):
-                            if 'media' in currentStatus.extended_entities:
-                                printInfo(currentStatus, wasTrunc)
-                                postToDiscord(currentStatus, self.twitter_dict)
-                        else:
-                            if 'media' in currentStatus.entities:
-                                printInfo(currentStatus, wasTrunc)
-                                postToDiscord(currentStatus, self.twitter_dict)
-                            else:
-                                print("Skipping Tweet, no media!")
+                        printInfo(currentStatus)
+                        postToDiscord(currentStatus, self.twitter_dict)
                     is_not_original_tweet = False
             except Exception as e:
                 print("WE GOT AN ERROR!: -------------------------")
