@@ -88,23 +88,6 @@ class Queue:
                                 postToDiscord(currentStatus, self.twitter_dict)
                             else:
                                 print("Skipping Tweet, no media!")
-
-                        # if wasTrunc and hasattr(currentStatus, "extended_entities"):
-                        #     if 'media' in currentStatus.extended_entities:
-                        #         printInfo(currentStatus, wasTrunc)
-                        #         media = currentStatus.extended_entities.get('media')
-                        #         link_str = []
-                        #         for x in range(len(media)):
-                        #             link_str.append(media[x].get("media_url"))
-                        #         postToDiscord(currentStatus, self.twitter_dict, link_str)
-                        # else:
-                        #     if 'media' in currentStatus.entities:
-                        #         printInfo(currentStatus, wasTrunc)
-                        #         media = currentStatus.entities.get('media')
-                        #         link_str = []
-                        #         for x in range(len(media)):
-                        #             link_str.append(media[x].get("media_url"))
-                        #         postToDiscord(currentStatus, self.twitter_dict, link_str)
                     is_not_original_tweet = False
             except Exception as e:
                 print("WE GOT AN ERROR!: -------------------------")
